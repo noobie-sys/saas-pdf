@@ -20,7 +20,7 @@ const Header = () => {
       <div className=" flex lg:justify-center gap-4 lg:gap-14 lg:items-center">
         <NavLink href="/#pricing">Pricing</NavLink>
         <SignedIn>
-          <NavLink href="/dashborad">dashborad</NavLink>
+          <NavLink href="/dashboard">dashborad</NavLink>
         </SignedIn>
       </div>
       <div className="flex lg:justify-end lg:flex-1 ">

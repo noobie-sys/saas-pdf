@@ -1,12 +1,17 @@
 "use client";
 
-import React from "react";
+import React, { useRef, useState } from "react";
 import { Button } from "../ui/button";
 import UploadInputForm from "./upload-form-input";
 import { z } from "zod";
 import { useUploadThing } from "@/utils/uploadthing";
 import { toast } from "sonner";
 import { FileText } from "lucide-react";
+import {
+  generatePDFSummary,
+  storePdfSummaries,
+} from "@/actions/uplaod-actions";
+import { useRouter } from "next/navigation";
 
 const schema = z.object({
   file: z
@@ -20,6 +25,9 @@ const schema = z.object({
 });
 
 const UploadForm = () => {
+  const inputRef = useRef<HTMLFormElement>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const router = useRouter();
   const { startUpload, routeConfig } = useUploadThing("pdfUploader", {
     onClientUploadComplete: () => {
       console.log("uploaded successfully!");
@@ -41,42 +49,88 @@ const UploadForm = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const file = formData.get("file") as File;
 
-    // validating the fields
-    const validatedFields = schema.safeParse({ file });
-    console.log(validatedFields);
-    if (!validatedFields.success) {
-      console.log(
-        validatedFields.error.flatten().fieldErrors.file?.[0] || "Invalid File"
-      );
-      toast.error("Invalid File Type", {
-        description: validatedFields.error.flatten().fieldErrors.file?.[0],
+    try {
+      setIsLoading(true);
+      const formData = new FormData(e.currentTarget);
+      const file = formData.get("file") as File;
+
+      // validating the fields
+      const validatedFields = schema.safeParse({ file });
+      console.log(validatedFields);
+      if (!validatedFields.success) {
+        // console.log(
+        //   validatedFields.error.flatten().fieldErrors.file?.[0] || "Invalid File"
+        // );
+        toast.error("Invalid File Type", {
+          description: validatedFields.error.flatten().fieldErrors.file?.[0],
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      toast("Uploading Pdf", {
+        description: "We are uploading the pdf",
       });
-      return;
+
+      // uploading the pdf on uploadthing
+      const response = await startUpload([file]);
+      // console.log("Am i gettting response or not ", response);
+      if (!response) {
+        toast.error("Something went wrong");
+        setIsLoading(false);
+        return;
+      }
+
+      toast("Processing PDF", {
+        description: "Please wait while we process your PDF",
+      });
+
+      // parsing the pdf using langchain
+      const summary = await generatePDFSummary(response);
+      // console.log("summary is exist", { summary });
+      const { data = null, message = undefined } = summary || {};
+
+      if (data) {
+        toast("Saving PDF", {
+          description: "wait a little longer while we are saving your pdf!",
+        });
+        inputRef.current?.reset();
+        let storeResults: any;
+        // save the summary to the database
+        if (data.pdfSummary) {
+          // save the summary
+          storeResults = await storePdfSummaries({
+            file_name: data.fileName,
+            original_file_url: response[0].ufsUrl,
+            summary_text: data.pdfSummary,
+            title: response[0].name,
+          });
+
+          toast.success("Summary generated!", {
+            description: "Your pdf summary file has been generated and saved!",
+          });
+
+          inputRef.current?.reset();
+
+          // redirect the user
+          // router.push(`/summaries/${storeResults?.data.id}`)
+        }
+      }
+    } catch (error) {
+      setIsLoading(false);
+      inputRef.current?.reset();
+    } finally {
+      setIsLoading(false);
     }
-
-    toast.loading("Uploading Pdf", {
-      icon: <FileText className="w-6 h-6" />,
-      description: "We are uploading the pdf",
-    });
-
-    const response = await startUpload([file]);
-    console.log("Am i gettting response or not ", response);
-    if (!response) {
-      toast.error("Something went wrong");
-      return;
-    }
-
-    toast.loading("Processing PDF", {
-      icon: <FileText className="w-6 h-6" />,
-      description: "Please wait while we process your PDF",
-    });
   };
   return (
     <div className="flex flex-col gap-8 max-w-2xl w-full">
-      <UploadInputForm onSubmit={handleSubmit} />
+      <UploadInputForm
+        isLoading={isLoading}
+        ref={inputRef}
+        onSubmit={handleSubmit}
+      />
     </div>
   );
 };

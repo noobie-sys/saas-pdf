@@ -20,15 +20,15 @@ export const ourFileRouter = {
 
         console.log("✅ User found:", user.id);
 
-        return { userId: user.id};
+        return { userId: user.id };
       } catch (err) {
         console.log("🔥 Middleware error:", err);
         throw new UploadThingError("Middleware failed");
       }
     })
     .onUploadComplete(async ({ metadata, file }) => {
-      console.log("completed for user id", metadata.userId);;
-      return { userId: metadata.userId, file : file.ufsUrl };
+      console.log("completed for user id", metadata.userId);
+      return { userId: metadata.userId, file: file };
     }),
 } satisfies FileRouter;
 
