@@ -15,7 +15,13 @@ import { Input } from "@/components/ui/input";
 import { getSummaryDeleteAction } from "@/actions/summary-action";
 import { toast } from "sonner";
 
-const DeleteButton = ({ summaryId }: { summaryId: string }) => {
+const DeleteButton = ({
+  summaryId,
+  file_key,
+}: {
+  summaryId: string;
+  file_key: string;
+}) => {
   const [isOpen, setIsOpen] = React.useState(false);
   // console.log(summaryId);
   const [isPending, startTransition] = React.useTransition();
@@ -23,7 +29,10 @@ const DeleteButton = ({ summaryId }: { summaryId: string }) => {
   const handleDelete = async () => {
     // Handle the delete action here
     startTransition(async () => {
-      const response = await getSummaryDeleteAction({ summaryId });
+      const response = await getSummaryDeleteAction({
+        summaryId,
+        file_key,
+      });
       if (!response.success) {
         toast.error("Something went wrong", {
           description: "Failed to delete summary, please try again later",

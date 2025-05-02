@@ -23,7 +23,7 @@ const SummaryCard = async ({ summary }: { summary: any }) => {
     <Card>
       <div className="flex flex-col gap-2 relative  ">
         <div className="absolute -top-2 right-2">
-          <DeleteButton summaryId={summary?.id} />
+          <DeleteButton summaryId={summary?.id} file_key={summary?.file_key} />
         </div>
         <div>
           <Link href={`/summaries/${summary?.id}`} className="block p-4 sm:p-6">

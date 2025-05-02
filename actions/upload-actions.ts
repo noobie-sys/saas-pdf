@@ -14,6 +14,7 @@ type savedPdfSummaryProps = {
   summary_text: string;
   title: string;
   file_name: string;
+  file_key_url?: string;
 };
 
 export const generatePDFSummary = async (
@@ -24,6 +25,7 @@ export const generatePDFSummary = async (
         file: {
           url: string;
           name: string;
+          key: string;
         };
       };
     }
@@ -40,7 +42,7 @@ export const generatePDFSummary = async (
   const {
     serverData: {
       userId,
-      file: { url: pdfUrl, name: pdfName },
+      file: { url: pdfUrl, name: pdfName, key: fileKey },
     },
   } = uploadResponse[0];
 
@@ -93,7 +95,8 @@ export const generatePDFSummary = async (
       message: "Summary generated summary",
       data: {
         pdfSummary,
-        fileName: fileName,
+        fileName,
+        fileKey,
       },
     };
   } catch (error) {
@@ -111,25 +114,30 @@ async function savedPdfSummary({
   summary_text,
   title,
   file_name,
+  file_key_url,
 }: savedPdfSummaryProps) {
   // run sql function
   try {
     const sql = await getDBconnection();
-    await sql`
+    const [savedSummary] = await sql`
       INSERT INTO pdf_summaries (
         user_id,
         original_file_url,
         summary_text,
         title,
-        file_name
+        file_name,
+        file_key
       ) VALUES (
         ${user_id},
         ${original_file_url},
         ${summary_text},
+        ${file_name},
         ${title},
-        ${file_name}
-      )
+        ${file_key_url}
+      ) RETURNING id, summary_text;
     `;
+
+    return savedSummary;
   } catch (error) {
     console.error("Error while saving pdf,", error);
     throw error;
@@ -141,6 +149,7 @@ export async function storePdfSummaries({
   summary_text,
   title,
   file_name,
+  file_key_url,
 }: savedPdfSummaryProps) {
   // user is logged in or not
   // save pdfSummaries, save pdfsummaries function
@@ -156,6 +165,7 @@ export async function storePdfSummaries({
       summary_text: summary_text,
       title: title,
       file_name: file_name,
+      file_key_url: file_key_url,
     });
 
     if (!savedSummary) {
@@ -164,14 +174,14 @@ export async function storePdfSummaries({
         message: "Failed to saved PDF summary",
       };
     }
-    // revalidate the cache 
-    revalidatePath(`/summaries/${savedSummary?.id}`)
+    // revalidate the cache
+    revalidatePath(`/summaries/${savedSummary?.id}`);
     return {
       success: true,
       message: "saved pdf successfully",
-      data : {
-        id : savedSummary?.id
-      }
+      data: {
+        id: savedSummary?.id,
+      },
     };
   } catch (error) {
     return {

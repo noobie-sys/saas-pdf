@@ -10,7 +10,7 @@ import { FileText } from "lucide-react";
 import {
   generatePDFSummary,
   storePdfSummaries,
-} from "@/actions/uplaod-actions";
+} from "@/actions/upload-actions";
 import { useRouter } from "next/navigation";
 
 const schema = z.object({
@@ -57,7 +57,7 @@ const UploadForm = () => {
 
       // validating the fields
       const validatedFields = schema.safeParse({ file });
-      console.log(validatedFields);
+      // console.log(validatedFields);
       if (!validatedFields.success) {
         // console.log(
         //   validatedFields.error.flatten().fieldErrors.file?.[0] || "Invalid File"
@@ -96,6 +96,7 @@ const UploadForm = () => {
           description: "wait a little longer while we are saving your pdf!",
         });
         inputRef.current?.reset();
+        console.log("data is here", data.fileKey);
         let storeResults: any;
         // save the summary to the database
         if (data.pdfSummary) {
@@ -105,6 +106,7 @@ const UploadForm = () => {
             original_file_url: response[0].ufsUrl,
             summary_text: data.pdfSummary,
             title: response[0].name,
+            file_key_url: data.fileKey,
           });
 
           toast.success("Summary generated!", {
@@ -114,7 +116,8 @@ const UploadForm = () => {
           inputRef.current?.reset();
 
           // redirect the user
-          // router.push(`/summaries/${storeResults?.data.id}`)
+          console.log("storeResults", storeResults?.data.id);
+          router.push(`/summaries/${storeResults?.data.id}`);
         }
       }
     } catch (error) {
