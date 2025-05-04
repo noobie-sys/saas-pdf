@@ -8,14 +8,21 @@ import { currentUser } from "@clerk/nextjs/server";
 import { getSummary } from "@/lib/summaries";
 import { redirect } from "next/navigation";
 import EmptySummaryState from "@/components/summaries/empty-summary-state";
+import { hasReachedUploadLimit } from "@/lib/users";
 
 const Dashboard = async () => {
-  const uploadLimit = 5;
   const user = await currentUser();
 
   if (!user) {
     redirect("/sign-in");
   }
+  const { hasReachedLimit, uploadLimit } = await hasReachedUploadLimit(
+    user?.id,
+    user?.emailAddresses[0].emailAddress
+  );
+
+  console.log(hasReachedLimit, uploadLimit); // Add this line to check the values of hasReachedLimit and uploadLimit in the console
+
   const summary = await getSummary(user.id);
   // console.log(summary);
   return (
@@ -34,7 +41,7 @@ const Dashboard = async () => {
               </p>
             </div>
 
-            <div>
+            {!hasReachedLimit && (
               <Button variant={"link"} className="hover:no-underline">
                 <Link
                   href={"/upload"}
@@ -44,23 +51,25 @@ const Dashboard = async () => {
                   New Summary
                 </Link>
               </Button>
-            </div>
+            )}
           </div>
-          <div className="mt-6">
-            <div className="bg-rose-50 w-full border border-rose-200 rounded-lg p-4 text-rose-800">
-              <p className="text-sm ">
-                You've reached the limit of {uploadLimit} uploads on the Basic
-                plan!
-                <Link
-                  href={"/pricing"}
-                  className="text-rose-700 underline hover:no-underline ml-1 font-medium underline-offset-4 items-center inline-flex"
-                >
-                  Upgrade to pro
-                  <ArrowRight className="h-4 w-4 inline-block ml-1" />
-                </Link>
-              </p>
+          {hasReachedLimit && (
+            <div className="mt-6">
+              <div className="bg-rose-50 w-full border border-rose-200 rounded-lg p-4 text-rose-800">
+                <p className="text-sm ">
+                  You've reached the limit of {uploadLimit} uploads on the Basic
+                  plan!
+                  <Link
+                    href={"/#pricing"}
+                    className="text-rose-700 underline hover:no-underline ml-1 font-medium underline-offset-4 items-center inline-flex"
+                  >
+                    Upgrade to pro
+                    <ArrowRight className="h-4 w-4 inline-block ml-1" />
+                  </Link>
+                </p>
+              </div>
             </div>
-          </div>
+          )}
           {summary.length === 0 && <EmptySummaryState />}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mt-8 lg:grid-cols-3 sm:px-0">
             {summary.map((item, index) => (
