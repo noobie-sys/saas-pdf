@@ -1,62 +1,8 @@
 import { cn } from "@/lib/utils";
+import { Plan, pricingPlans } from "@/utils/constants";
 import { CheckIcon, MoveRightIcon } from "lucide-react";
 import Link from "next/link";
 import React from "react";
-
-type Plan = {
-  id: string;
-  name: string;
-  description: string;
-  items: string[];
-  paymentLink: string;
-  priceId: string;
-  price: number;
-};
-
-const plans: Plan[] = [
-  {
-    id: "basic",
-    name: "basic",
-    description: "For Students and small teams",
-    items: [
-      "5PDF summaries per month",
-      "Email support",
-      "Standard Processing speed",
-    ],
-    paymentLink:
-      process.env.NODE_ENV === "development"
-        ? "https://buy.stripe.com/test_m4p6j6w9l6m"
-        : "https://buy.stripe.com/9qc9e7x9k4m",
-
-    priceId:
-      process.env.NODE_ENV === "development"
-        ? "price_1N0jYyKu2Zy6m2iPm6m2iPm6"
-        : "price_1N0jYyKu2Zy6m2iPm6m2iPm6",
-
-    price: 10,
-  },
-  {
-    id: "pro",
-    price: 20,
-    name: "Pro",
-    description: "For professionals and teams",
-    items: [
-      "Unlimited PDF summaries per month",
-      "Priority support",
-      "24/7 priority support",
-      "Markdown Export",
-    ],
-    paymentLink:
-      process.env.NODE_ENV === "development"
-        ? "https://buy.stripe.com/test_m4p6j6w9l6m"
-        : "https://buy.stripe.com/9qc9e7x9k4m",
-
-    priceId:
-      process.env.NODE_ENV === "development"
-        ? "price_1N0jYyKu2Zy6m2iPm6m2iPm6"
-        : "price_1N0jYyKu2Zy6m2iPm6m2iPm6",
-  },
-];
 
 const PricingSection = () => {
   return (
@@ -68,7 +14,7 @@ const PricingSection = () => {
           </h2>
         </div>
         <div className="relative flex  gap-8 justify-center flex-col lg:flex-row items-center lg:items-stretch">
-          {plans.map((plan) => {
+          {pricingPlans.map((plan: Plan) => {
             return <PricingCard key={plan.id} {...plan} />;
           })}
         </div>

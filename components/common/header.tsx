@@ -1,14 +1,12 @@
 "use client";
 import { FileText } from "lucide-react";
-
 import React from "react";
-import { Button } from "../ui/button";
 import NavLink from "./nav-link";
 import { UserButton } from "@clerk/nextjs";
 import { SignedIn, SignedOut } from "@clerk/clerk-react";
+import ProBadge from "./pro-badge";
 
 const Header = () => {
-  const isLoggedIn = false;
   return (
     <nav className="container flex items-center justify-between py-4 lg:px-8 px-4 mx-auto">
       <div className="flex lg:flex-1 ">
@@ -27,9 +25,10 @@ const Header = () => {
         <SignedIn>
           <div className="flex gap-2 items-center ">
             <NavLink href="/upload">Upload a pdf</NavLink>
-            <div>Pro</div>
-
-            <UserButton />
+            <ProBadge />
+            <SignedIn>
+              <UserButton />
+            </SignedIn>
           </div>
         </SignedIn>
         <SignedOut>
