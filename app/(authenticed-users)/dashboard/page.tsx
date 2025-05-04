@@ -16,12 +16,9 @@ const Dashboard = async () => {
   if (!user) {
     redirect("/sign-in");
   }
-  const { hasReachedLimit, uploadLimit } = await hasReachedUploadLimit(
-    user?.id,
-    user?.emailAddresses[0].emailAddress
-  );
+  const { hasReachedLimit, uploadLimit } = await hasReachedUploadLimit(user);
 
-  console.log(hasReachedLimit, uploadLimit); // Add this line to check the values of hasReachedLimit and uploadLimit in the console
+  // console.log(hasReachedLimit, uploadLimit, user); // Add this line to check the values of hasReachedLimit and uploadLimit in the console
 
   const summary = await getSummary(user.id);
   // console.log(summary);
