@@ -6,12 +6,13 @@ import UploadInputForm from "./upload-form-input";
 import { z } from "zod";
 import { useUploadThing } from "@/utils/uploadthing";
 import { toast } from "sonner";
-import { FileText } from "lucide-react";
 import {
   generatePDFSummary,
   storePdfSummaries,
 } from "@/actions/upload-actions";
 import { useRouter } from "next/navigation";
+
+import UploadFormSkeleton from "./upload-form-loading-skeleton";
 
 const schema = z.object({
   file: z
@@ -134,6 +135,24 @@ const UploadForm = () => {
         ref={inputRef}
         onSubmit={handleSubmit}
       />
+      {isLoading && (
+        <>
+          <div className="relative">
+            <div
+              className="absolute inset-0 flex items-center"
+              aria-hidden="true"
+            >
+              <div className="w-full border-t border-gray-200 dark:border-gray-800" />
+            </div>
+            <div className="relative flex justify-center">
+              <span className="bg-background px-3 text-muted-foreground text-sm">
+                Processing
+              </span>
+            </div>
+          </div>
+          <UploadFormSkeleton />
+        </>
+      )}
     </div>
   );
 };
