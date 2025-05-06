@@ -88,7 +88,18 @@ const UploadForm = () => {
       });
 
       // parsing the pdf using langchain
-      const summary = await generatePDFSummary(response);
+      const summary = await generatePDFSummary([
+        {
+          serverData: {
+            userId: response[0].key,
+            file: {
+              url: response[0].ufsUrl,
+              name: response[0].name,
+              key: response[0].key,
+            },
+          },
+        },
+      ]);
       // console.log("summary is exist", { summary });
       const { data = null, message = undefined } = summary || {};
 
